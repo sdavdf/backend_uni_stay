@@ -2,6 +2,7 @@ package com.codesdfc.backend_uni_stay.repository;
 
 import com.codesdfc.backend_uni_stay.model.RolUsuario;
 import com.codesdfc.backend_uni_stay.model.Usuario;
+import com.codesdfc.backend_uni_stay.recomm.UserFeatureRow;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,8 +19,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Buscar usuarios que tengan un rol específico
     @Query("SELECT u FROM Usuario u JOIN u.roles r WHERE r = :rol")
     List<Usuario> findByRol(@Param("rol") RolUsuario rol);
-
-    // === NUEVOS MÉTODOS PARA FUNCIONALIDADES SOCIALES ===
 
     // Buscar usuarios por nombre (para búsqueda)
     List<Usuario> findByNombreContainingIgnoreCase(String nombre);
@@ -38,4 +37,35 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Buscar usuarios excluyendo al actual (para recomendaciones)
     @Query("SELECT u FROM Usuario u WHERE u.id != :excludeId ORDER BY u.fechaRegistro DESC")
     List<Usuario> findRecomendadosExcludingUser(@Param("excludeId") Long excludeId, org.springframework.data.domain.Pageable pageable);
+
+
+    @Query("""
+SELECT new com.codesdfc.backend_uni_stay.recomm.UserFeatureRow(
+    u.id,
+    u.nombre,
+    u.genero,
+    i.personalidad,
+    i.nivelLimpieza,
+    i.horarioEstudio,
+    p.compartirHabitacion,
+    p.fumador,
+    p.mascotasPermitidas,
+    i.fiestas,
+    u.edad,
+    p.presupuestoMax,
+    p.distanciaMaxima,
+    p.tipoAlojamientoPreferido,
+    p.preferenciaUbicacion
+)
+FROM Usuario u
+JOIN Interes i ON i.usuario = u
+JOIN Preferencia p ON p.usuario = u
+WHERE u.perfilCompletado = true
+""")
+    List<UserFeatureRow> fetchUserFeatureRows();
+
+
+    // para mostrar nombre en resultados
+    @Query("SELECT u.nombre FROM Usuario u WHERE u.id = :id")
+    String findNombreById(Long id);
 }

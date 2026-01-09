@@ -1,57 +1,43 @@
-// src/main/java/com/codesdf/unimatch/service/RecommService.java
 package com.codesdfc.backend_uni_stay.service;
 
-import com.codesdfc.backend_uni_stay.dto.RecoResponseDTO;
+import com.codesdfc.backend_uni_stay.dto.*;
+import com.codesdfc.backend_uni_stay.recomm.FeatureEncoder;
+import com.codesdfc.backend_uni_stay.recomm.UserFeatureRow;
+import com.codesdfc.backend_uni_stay.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class RecommService {
 
-    private final WebClient recommClient; //inyectado desde WebClientConfig
+    private final UsuarioRepository usuarioRepository;
 
-    public RecoResponseDTO recomendar(Long userId, Integer topN, List<Long> excluir) {
+    private FeatureEncoder encoder;
+    private boolean trained = false;
 
-        int top = (topN != null && topN > 0) ? topN : 5;
+    public RecoResponseDTO recomendar(Long userId, int topN) {
 
-        return recommClient
-                .get()
-                .uri(uriBuilder -> {
-                    // URL: /recomendar/{userId}?top_n=..
-                    var ub = uriBuilder
-                            .path("/recomendar/{userId}")
-                            .queryParam("top_n", top);
+        if (!trained) {
+            List<UserFeatureRow> rows = usuarioRepository.fetchUserFeatureRows();
+            encoder = new FeatureEncoder();
+            encoder.fitTransform(rows);
+            trained = true;
+        }
 
-                    if (excluir != null) {
-                        excluir.forEach(e -> ub.queryParam("excluir", e));
-                    }
+        var recs = encoder.recommend(userId, topN);
 
-                    return ub.build(userId);
-                })
-                .retrieve()
-                .bodyToMono(RecoResponseDTO.class)
-                .block();
-    }
+        List<RecoItemDTO> items = recs.stream()
+                .map(e -> new RecoItemDTO(
+                        e.getKey(),
+                        usuarioRepository.findNombreById(e.getKey()),
+                        e.getValue()
+                ))
+                .collect(Collectors.toList());
 
-    public Object health() {
-        return recommClient
-                .get()
-                .uri("/health")
-                .retrieve()
-                .bodyToMono(Object.class)
-                .block();
-    }
-
-    public Object reload() {
-        return recommClient
-                .post()
-                .uri("/admin/reload")
-                .retrieve()
-                .bodyToMono(Object.class)
-                .block();
+        return new RecoResponseDTO(userId, items);
     }
 }

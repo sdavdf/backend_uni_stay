@@ -13,7 +13,7 @@ import java.util.List;
 public class RecoResponseDTO {
 
     @JsonProperty("usuario_id")
-    private Long usuarioId;  // mapea usuario_id de FastAPI
+    private Long usuarioId;
 
     private List<RecoItemDTO> recomendaciones;
 }
