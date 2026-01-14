@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class RecommService {
 
     private final UsuarioRepository usuarioRepository;
-
+    //recomendaciones por similitud
     private FeatureEncoder encoder;
     private boolean trained = false;
 
