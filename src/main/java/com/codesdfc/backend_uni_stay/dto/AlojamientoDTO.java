@@ -19,9 +19,11 @@ public class AlojamientoDTO {
     private String disponibilidad;
     private Double calificacion;
     private String direccion;
-    private String longitud;
+    private Double longitud;
+    private Double latitud;
     private Set<String> fotos;
     private Set<String> caracteristicas;
+    private Long visitas;
 
 
     // Información del ofertante

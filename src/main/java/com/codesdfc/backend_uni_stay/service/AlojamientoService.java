@@ -21,6 +21,7 @@ public class AlojamientoService {
     private final AlojamientoRepository alojamientoRepository;
     private final UsuarioRepository usuarioRepository;
 
+    /* ===================== CREAR / ACTUALIZAR ===================== */
 
     public AlojamientoDTO crearAlojamiento(AlojamientoRequest request, String emailUsuario) {
         Usuario publicador = usuarioRepository.findByEmail(emailUsuario)
@@ -32,31 +33,15 @@ public class AlojamientoService {
         return guardarAlojamientoDesdeRequest(alojamiento, request);
     }
 
-
-    public List<AlojamientoDTO> obtenerTodos() {
-        return alojamientoRepository.findAll()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    public AlojamientoDTO obtenerPorId(Long id) {
-        Alojamiento alojamiento = alojamientoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Alojamiento no encontrado con id: " + id));
-        return convertToDTO(alojamiento);
-    }
-
     public AlojamientoDTO crearAlojamiento(AlojamientoRequest request) {
         Alojamiento alojamiento = new Alojamiento();
         return guardarAlojamientoDesdeRequest(alojamiento, request);
     }
 
-
     public AlojamientoDTO actualizarAlojamiento(Long id, AlojamientoRequest request, String emailUsuario) {
         Alojamiento alojamiento = alojamientoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Alojamiento no encontrado"));
 
-        // Verificar que el usuario sea el dueño
         if (!alojamiento.getPublicador().getEmail().equals(emailUsuario)) {
             throw new RuntimeException("Solo el publicador puede modificar este alojamiento");
         }
@@ -75,7 +60,46 @@ public class AlojamientoService {
         alojamientoRepository.deleteById(id);
     }
 
-    // Métodos de búsqueda
+    /* ===================== OBTENER ===================== */
+
+    public List<AlojamientoDTO> obtenerTodos() {
+        return alojamientoRepository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<Alojamiento> obtenerEntityPorId(Long id) {
+        return alojamientoRepository.findById(id);
+    }
+
+    /**
+     * Obtiene un alojamiento por ID e incrementa las visitas
+     */
+    public AlojamientoDTO obtenerPorId(Long id) {
+        Alojamiento alojamiento = alojamientoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Alojamiento no encontrado"));
+
+        alojamiento.setVisitas(
+                alojamiento.getVisitas() == null ? 1 : alojamiento.getVisitas() + 1
+        );
+
+        alojamientoRepository.save(alojamiento);
+        return convertToDTO(alojamiento);
+    }
+
+    public List<AlojamientoDTO> obtenerMisPublicaciones(String emailUsuario) {
+        Usuario publicador = usuarioRepository.findByEmail(emailUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        return alojamientoRepository.findByPublicador(publicador)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /* ===================== BÚSQUEDAS ===================== */
+
     public List<AlojamientoDTO> buscarPorNombre(String nombre) {
         return alojamientoRepository.findByNombreContainingIgnoreCase(nombre)
                 .stream()
@@ -111,25 +135,36 @@ public class AlojamientoService {
                 .collect(Collectors.toList());
     }
 
-    public List<AlojamientoDTO> buscarConFiltros(String nombre, Double precioMin, Double precioMax,
-                                                 Double distanciaMax, Integer minHabitaciones, Double minCalificacion) {
-        return alojamientoRepository.buscarAlojamientosConFiltros(nombre, precioMin, precioMax,
-                        distanciaMax, minHabitaciones, minCalificacion)
+    public List<AlojamientoDTO> buscarConFiltros(
+            String nombre,
+            Double precioMin,
+            Double precioMax,
+            Double distanciaMax,
+            Integer minHabitaciones,
+            Double minCalificacion
+    ) {
+        return alojamientoRepository.buscarAlojamientosConFiltros(
+                        nombre, precioMin, precioMax, distanciaMax, minHabitaciones, minCalificacion
+                )
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+
+    public List<AlojamientoDTO> buscarPorDireccion(String texto) {
+        return alojamientoRepository.buscarPorDireccion(texto)
+                .stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    /* ===================== ORDENAMIENTOS ===================== */
 
     public List<AlojamientoDTO> ordenarPorPrecioAsc() {
         return alojamientoRepository.findAllByOrderByPrecioAsc()
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
-    }
-
-    // En AlojamientoService.java
-    public Optional<Alojamiento> obtenerEntityPorId(Long id) {
-        return alojamientoRepository.findById(id);
     }
 
     public List<AlojamientoDTO> ordenarPorPrecioDesc() {
@@ -146,7 +181,34 @@ public class AlojamientoService {
                 .collect(Collectors.toList());
     }
 
-    // Métodos privados de utilidad
+    /* ===================== RECOMENDACIONES ===================== */
+
+    public List<AlojamientoDTO> mejoresCerca(Double lat, Double lon, Double radio) {
+        return alojamientoRepository.mejoresCerca(lat, lon, radio)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<AlojamientoDTO> masVisitadosCerca(
+            Double lat, Double lon, Double radio
+    ) {
+        return alojamientoRepository.masVisitadosCerca(lat, lon, radio)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+
+    public List<AlojamientoFilterDTO> listarRecientes() {
+        return alojamientoRepository.findAllByOrderByFechaPublicacionDesc()
+                .stream()
+                .map(this::convertToResumenDTO)
+                .collect(Collectors.toList());
+    }
+
+    /* ===================== MÉTODOS PRIVADOS ===================== */
+
     private AlojamientoDTO guardarAlojamientoDesdeRequest(Alojamiento alojamiento, AlojamientoRequest request) {
         alojamiento.setNombre(request.getNombre());
         alojamiento.setDescripcion(request.getDescripcion());
@@ -156,7 +218,13 @@ public class AlojamientoService {
         alojamiento.setDisponibilidad(request.getDisponibilidad());
         alojamiento.setCalificacion(request.getCalificacion());
         alojamiento.setDireccion(request.getDireccion());
+        alojamiento.setLatitud(request.getLatitud());
         alojamiento.setLongitud(request.getLongitud());
+
+        // Inicializar visitas si es nuevo
+        if (alojamiento.getId() == null) {
+            alojamiento.setVisitas(0L);
+        }
 
         if (request.getFotos() != null) {
             alojamiento.setFotos(request.getFotos());
@@ -170,17 +238,6 @@ public class AlojamientoService {
         return convertToDTO(saved);
     }
 
-    public List<AlojamientoDTO> obtenerMisPublicaciones(String emailUsuario) {
-        Usuario publicador = usuarioRepository.findByEmail(emailUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        return alojamientoRepository.findByPublicador(publicador)
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-
     private AlojamientoDTO convertToDTO(Alojamiento alojamiento) {
         AlojamientoDTO dto = new AlojamientoDTO();
         dto.setId(alojamiento.getId());
@@ -192,9 +249,11 @@ public class AlojamientoService {
         dto.setDisponibilidad(alojamiento.getDisponibilidad());
         dto.setCalificacion(alojamiento.getCalificacion());
         dto.setDireccion(alojamiento.getDireccion());
+        dto.setLatitud(alojamiento.getLatitud());     // ✅
+        dto.setLongitud(alojamiento.getLongitud());   // ✅
+        dto.setVisitas(alojamiento.getVisitas());     // ✅
         dto.setFotos(alojamiento.getFotos());
         dto.setCaracteristicas(alojamiento.getCaracteristicas());
-
 
         if (alojamiento.getPublicador() != null) {
             dto.setPublicadorNombre(alojamiento.getPublicador().getNombre());
@@ -202,13 +261,6 @@ public class AlojamientoService {
         }
 
         return dto;
-    }
-
-    public List<AlojamientoFilterDTO> listarRecientes() {
-        return alojamientoRepository.findAllByOrderByFechaPublicacionDesc()
-                .stream()
-                .map(this::convertToResumenDTO)
-                .collect(Collectors.toList());
     }
 
     private AlojamientoFilterDTO convertToResumenDTO(Alojamiento a) {
@@ -219,14 +271,13 @@ public class AlojamientoService {
         dto.setDistancia(a.getDistancia());
         dto.setHabitaciones(a.getHabitaciones());
         dto.setDireccion(a.getDireccion());
+        dto.setFechaPublicacion(a.getFechaPublicacion());
+
         if (a.getPublicador() != null) {
             dto.setPublicadorId(a.getPublicador().getId());
             dto.setPublicadorNombre(a.getPublicador().getNombre());
         }
-        dto.setFechaPublicacion(a.getFechaPublicacion());
+
         return dto;
     }
-
-
-
 }

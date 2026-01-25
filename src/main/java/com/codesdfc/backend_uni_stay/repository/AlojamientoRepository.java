@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface AlojamientoRepository extends JpaRepository<Alojamiento, Long> {
 
+
     // Buscar alojamientos por nombre (búsqueda parcial)
     List<Alojamiento> findByNombreContainingIgnoreCase(String nombre);
 
@@ -63,5 +64,66 @@ public interface AlojamientoRepository extends JpaRepository<Alojamiento, Long> 
     List<Alojamiento> findByPublicador(Usuario publicador);
 
     List<Alojamiento> findAllByOrderByFechaPublicacionDesc();
-    
+
+    @Query("""
+SELECT a FROM Alojamiento a
+WHERE
+(6371 * acos(
+    cos(radians(:lat)) *
+    cos(radians(a.latitud)) *
+    cos(radians(a.longitud) - radians(:lon)) +
+    sin(radians(:lat)) *
+    sin(radians(a.latitud))
+)) <= :radio
+""")
+    List<Alojamiento> buscarCerca(
+            @Param("lat") Double lat,
+            @Param("lon") Double lon,
+            @Param("radio") Double radio
+    );
+
+
+    @Query("""
+SELECT a FROM Alojamiento a
+WHERE
+(6371 * acos(
+    cos(radians(:lat)) *
+    cos(radians(a.latitud)) *
+    cos(radians(a.longitud) - radians(:lon)) +
+    sin(radians(:lat)) *
+    sin(radians(a.latitud))
+)) <= :radio
+ORDER BY a.calificacion DESC
+""")
+    List<Alojamiento> mejoresCerca(
+            Double lat,
+            Double lon,
+            Double radio
+    );
+
+    @Query("""
+SELECT a FROM Alojamiento a
+WHERE
+(6371 * acos(
+    cos(radians(:lat)) *
+    cos(radians(a.latitud)) *
+    cos(radians(a.longitud) - radians(:lon)) +
+    sin(radians(:lat)) *
+    sin(radians(a.latitud))
+)) <= :radio
+ORDER BY a.visitas DESC
+""")
+    List<Alojamiento> masVisitadosCerca(
+            Double lat,
+            Double lon,
+            Double radio
+    );
+    @Query("""
+    SELECT a FROM Alojamiento a
+    WHERE LOWER(a.direccion) LIKE LOWER(CONCAT('%', :texto, '%'))
+    ORDER BY a.visitas DESC
+""")
+    List<Alojamiento> buscarPorDireccion(@Param("texto") String texto);
+
+
 }

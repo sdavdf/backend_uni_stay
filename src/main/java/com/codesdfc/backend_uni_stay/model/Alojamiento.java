@@ -30,7 +30,11 @@ public class Alojamiento {
     private String disponibilidad;
     private Double calificacion;
     private String direccion;
-    private String longitud;
+    private Double longitud;
+    private Double latitud;
+
+    private Long visitas; // contador de popularidad
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")

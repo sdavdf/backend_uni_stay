@@ -144,4 +144,36 @@ public class AlojamientoController {
         return ResponseEntity.ok(filename); // ej: "f2c4b3c1-...jpg"
     }
 
+    @GetMapping("/cerca/mejores")
+    public ResponseEntity<List<AlojamientoDTO>> mejoresCerca(
+            @RequestParam Double lat,
+            @RequestParam Double lon,
+            @RequestParam Double radioKm
+    ) {
+        return ResponseEntity.ok(
+                alojamientoService.mejoresCerca(lat, lon, radioKm)
+        );
+    }
+
+    @GetMapping("/recom/mas-visitados")
+    public List<AlojamientoDTO> masVisitados(
+            @RequestParam Double lat,
+            @RequestParam Double lon,
+            @RequestParam Double radio
+    ) {
+        return alojamientoService.masVisitadosCerca(lat, lon, radio);
+    }
+
+
+    @GetMapping("/recom/filtros")
+    public List<AlojamientoDTO> filtrar(
+            @RequestParam(required = false) String nombre
+    ) {
+        if (nombre != null && !nombre.isBlank()) {
+            return alojamientoService.buscarPorDireccion(nombre);
+        }
+        return alojamientoService.obtenerTodos();
+    }
+
+
 }

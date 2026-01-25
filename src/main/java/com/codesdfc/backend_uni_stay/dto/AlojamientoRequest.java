@@ -14,7 +14,8 @@ public class AlojamientoRequest {
     private String disponibilidad;
     private Double calificacion;
     private String direccion;
-    private String longitud;
+    private Double longitud;
+    private Double latitud;
     private Set<String> fotos;
     private Set<String> caracteristicas;
 }
