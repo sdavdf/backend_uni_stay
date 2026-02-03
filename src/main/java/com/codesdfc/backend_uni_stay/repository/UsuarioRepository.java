@@ -51,7 +51,7 @@ SELECT new com.codesdfc.backend_uni_stay.recomm.UserFeatureRow(
     p.fumador,
     p.mascotasPermitidas,
     i.fiestas,
-    u.edad,
+    u.fechaNacimiento,
     p.presupuestoMax,
     p.distanciaMaxima,
     p.tipoAlojamientoPreferido,

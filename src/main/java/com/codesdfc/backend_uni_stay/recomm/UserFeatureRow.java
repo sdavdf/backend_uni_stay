@@ -1,5 +1,8 @@
 package com.codesdfc.backend_uni_stay.recomm;
 
+import java.time.LocalDate;
+import java.time.Period;
+
 public class UserFeatureRow {
 
     private Long userId;
@@ -15,6 +18,7 @@ public class UserFeatureRow {
     private Boolean mascotasPermitidas;
     private Boolean fiestas;
 
+    private LocalDate fechaNacimiento;
     private Integer edad;
     private Double presupuestoMax;
     private Double distanciaMaxima;
@@ -33,7 +37,7 @@ public class UserFeatureRow {
             Boolean fumador,
             Boolean mascotasPermitidas,
             Boolean fiestas,
-            Integer edad,
+            LocalDate fechaNacimiento,
             Double presupuestoMax,
             Double distanciaMaxima,
             String tipoAlojamientoPreferido,
@@ -49,7 +53,8 @@ public class UserFeatureRow {
         this.fumador = fumador;
         this.mascotasPermitidas = mascotasPermitidas;
         this.fiestas = fiestas;
-        this.edad = edad;
+        this.fechaNacimiento = fechaNacimiento;
+        this.edad = calcularEdad(fechaNacimiento);
         this.presupuestoMax = presupuestoMax;
         this.distanciaMaxima = distanciaMaxima;
         this.tipoAlojamientoPreferido = tipoAlojamientoPreferido;
@@ -82,4 +87,10 @@ public class UserFeatureRow {
     public Double getDistanciaMaxima() { return distanciaMaxima; }
     public String getTipoAlojamientoPreferido() { return tipoAlojamientoPreferido; }
     public String getPreferenciaUbicacion() { return preferenciaUbicacion; }
+
+    private Integer calcularEdad(LocalDate fechaNacimiento) {
+        if (fechaNacimiento == null) return null;
+        return Period.between(fechaNacimiento, LocalDate.now()).getYears();
+    }
+
 }

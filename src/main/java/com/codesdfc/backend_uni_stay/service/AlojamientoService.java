@@ -249,11 +249,12 @@ public class AlojamientoService {
         dto.setDisponibilidad(alojamiento.getDisponibilidad());
         dto.setCalificacion(alojamiento.getCalificacion());
         dto.setDireccion(alojamiento.getDireccion());
-        dto.setLatitud(alojamiento.getLatitud());     // ✅
-        dto.setLongitud(alojamiento.getLongitud());   // ✅
-        dto.setVisitas(alojamiento.getVisitas());     // ✅
+        dto.setLatitud(alojamiento.getLatitud());
+        dto.setLongitud(alojamiento.getLongitud());
+        dto.setVisitas(alojamiento.getVisitas());
         dto.setFotos(alojamiento.getFotos());
         dto.setCaracteristicas(alojamiento.getCaracteristicas());
+        dto.setFecha_publicacion(alojamiento.getFechaPublicacion());
 
         if (alojamiento.getPublicador() != null) {
             dto.setPublicadorNombre(alojamiento.getPublicador().getNombre());

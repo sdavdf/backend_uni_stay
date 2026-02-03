@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -24,6 +25,7 @@ public class AlojamientoDTO {
     private Set<String> fotos;
     private Set<String> caracteristicas;
     private Long visitas;
+    private LocalDateTime fecha_publicacion;
 
 
     // Información del ofertante

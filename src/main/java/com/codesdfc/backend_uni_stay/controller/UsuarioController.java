@@ -7,12 +7,15 @@ import com.codesdfc.backend_uni_stay.dto.UsuarioPerfilDTO;
 import com.codesdfc.backend_uni_stay.model.RolUsuario;
 import com.codesdfc.backend_uni_stay.model.Usuario;
 import com.codesdfc.backend_uni_stay.service.UsuarioService;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -148,7 +151,8 @@ public class UsuarioController {
         if (request.getNombre() != null) usuario.setNombre(request.getNombre());
         if (request.getTelefono() != null) usuario.setTelefono(request.getTelefono());
         if (request.getGenero() != null) usuario.setGenero(request.getGenero());
-        if (request.getEdad() != null) usuario.setEdad(request.getEdad());
+        if (request.getFechaNacimiento() != null)
+            usuario.setFechaNacimiento(request.getFechaNacimiento());
         if (request.getCarrera() != null) usuario.setCarrera(request.getCarrera());
         if (request.getSemestre() != null) usuario.setSemestre(request.getSemestre());
         if (request.getBio() != null) usuario.setBio(request.getBio());
@@ -245,7 +249,7 @@ public class UsuarioController {
         return ResponseEntity.ok(estadisticas);
     }
 
-    // === 🔧 ADMIN ENDPOINTS (UsuarioDTO básico) ===
+
 
     /**
      * Obtener todos los usuarios (lista básica - admin)
@@ -295,8 +299,8 @@ public class UsuarioController {
         private String telefono;
         private String fotoPerfil;
         private String genero;
-        private Integer edad;
-        private String carrera;
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        private LocalDate fechaNacimiento;        private String carrera;
         private Integer semestre;
         private String bio;
 
@@ -309,8 +313,12 @@ public class UsuarioController {
         public void setFotoPerfil(String fotoPerfil) { this.fotoPerfil = fotoPerfil; }
         public String getGenero() { return genero; }
         public void setGenero(String genero) { this.genero = genero; }
-        public Integer getEdad() { return edad; }
-        public void setEdad(Integer edad) { this.edad = edad; }
+        public LocalDate getFechaNacimiento() {
+            return fechaNacimiento;
+        }
+        public void setFechaNacimiento(LocalDate fechaNacimiento) {
+            this.fechaNacimiento = fechaNacimiento;
+        }
         public String getCarrera() { return carrera; }
         public void setCarrera(String carrera) { this.carrera = carrera; }
         public Integer getSemestre() { return semestre; }

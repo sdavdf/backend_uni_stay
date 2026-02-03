@@ -253,6 +253,7 @@ public class UsuarioService {
         dto.setEmail(usuario.getEmail());
         dto.setTelefono(usuario.getTelefono());
         dto.setGenero(usuario.getGenero());
+        dto.setFechaNacimiento(usuario.getFechaNacimiento());
         dto.setEdad(usuario.getEdad());
         dto.setCarrera(usuario.getCarrera());
         dto.setSemestre(usuario.getSemestre());

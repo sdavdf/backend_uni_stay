@@ -7,7 +7,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import java.time.Period;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,7 +35,7 @@ public class Usuario {
 
     // Perfil social
     private String genero;
-    private Integer edad;
+    private LocalDate fechaNacimiento;
     private String carrera;
     private Integer semestre;
     private String bio;
@@ -91,4 +93,10 @@ public class Usuario {
     @ToString.Exclude @EqualsAndHashCode.Exclude
     @JsonIgnore
     private Set<Solicitud> solicitudesRecibidas = new HashSet<>();
+
+    @Transient
+    public Integer getEdad() {
+        if (fechaNacimiento == null) return null;
+        return Period.between(fechaNacimiento, LocalDate.now()).getYears();
+    }
 }
